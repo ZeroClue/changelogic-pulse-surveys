@@ -23,7 +23,7 @@ export interface SessionUser {
   name: string;
   role: OrganizationRole;
   organization: string;
-  /** Known only when the login screen could enrich it via POST /api/seed. */
+  /** Set by the login screen from GET /api/users (absent only as fallback). */
   organizationId?: string;
 }
 

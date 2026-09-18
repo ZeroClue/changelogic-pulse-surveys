@@ -5,6 +5,7 @@ export interface DemoUserDto {
   name: string;
   role: OrganizationRole;
   organization: string;
+  organizationId: string;
 }
 
 export interface AuthUserDto {

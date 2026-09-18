@@ -17,8 +17,10 @@ export interface DemoUser {
   id: string;
   name: string;
   role: OrganizationRole;
-  /** Organization NAME (the list does not expose organization ids). */
+  /** Organization name. */
   organization: string;
+  /** Organization id — sent as X-Org-Id on sign-in. */
+  organizationId: string;
 }
 
 /** GET /api/surveys/active (ActiveSurveyDto). */
@@ -103,8 +105,6 @@ export interface SurveySummary {
 
 /**
  * POST /api/seed payload (SeedResult) — public, idempotent, dev-only.
- * The organizations list is the only client-side source of organization ids,
- * which lets the login screen enrich demo users with `X-Org-Id` values.
  */
 export interface SeedResult {
   organizations: Array<{ id: string; name: string }>;

@@ -9,6 +9,7 @@ interface DemoUserRow {
   name: string;
   role: OrganizationRole;
   organization: string;
+  organization_id: string;
 }
 
 interface AuthUserRow {
@@ -38,6 +39,7 @@ export class UsersService {
       name: row.name,
       role: row.role,
       organization: row.organization,
+      organizationId: row.organization_id,
     }));
   }
 

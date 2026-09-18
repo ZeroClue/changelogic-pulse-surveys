@@ -23,9 +23,9 @@ export const API_BASE_URL: string = (configuredBaseUrl ?? DEFAULT_API_BASE_URL).
 
 /**
  * Headers for demo header auth (SPEC §4). `X-User-Id` is always sent;
- * `X-Org-Id` is sent only when the client actually knows the organization
- * id (the demo user list carries org names, so the id is optional — the
- * server always derives the org from the user).
+ * `X-Org-Id` is sent only when the session actually carries the organization
+ * id (GET /api/users provides it; it is optional as a fallback — the server
+ * always derives the org from the user).
  */
 export interface AuthHeaders {
   userId: string;

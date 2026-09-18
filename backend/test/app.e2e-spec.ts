@@ -209,10 +209,16 @@ describe('RLS fail-closed + warm-connection regression (S-1)', () => {
 });
 
 describe('GET /api/users (public demo login list)', () => {
-  it('lists the seeded users of both orgs without headers', async () => {
+  it('lists the seeded users of both orgs with their organization ids', async () => {
     const res = await get('/api/users');
     expect(res.status).toBe(200);
-    const names = res.body.map((u: { name: string }) => u.name);
+    const rows = res.body as Array<{
+      id: string;
+      name: string;
+      organization: string;
+      organizationId: string;
+    }>;
+    const names = rows.map((u) => u.name);
     expect(names).toEqual(
       expect.arrayContaining([
         'Ada Manager',
@@ -221,7 +227,14 @@ describe('GET /api/users (public demo login list)', () => {
         'Omar Member',
       ]),
     );
-    expect(res.body).toHaveLength(4);
+    expect(rows).toHaveLength(4);
+    // organization_id ships with the list (migration 004) so the login
+    // screen can set X-Org-Id without the POST /api/seed round-trip.
+    for (const row of rows) {
+      expect(row.organizationId).toBe(
+        row.organization === 'Acme Corp' ? ORG_A_ID : ORG_B_ID,
+      );
+    }
   });
 });
 
