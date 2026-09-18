@@ -48,6 +48,7 @@ Shared database, shared schema. Every tenant table carries `organization_id` so 
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
+| organization_id | uuid NOT NULL FK → organizations | every tenant table carries it so RLS policies are uniform (§2) |
 | survey_id | uuid NOT NULL FK → surveys ON DELETE CASCADE | |
 | position | smallint NOT NULL CHECK (position BETWEEN 1 AND 3) | UNIQUE (survey_id, position); ≤3 questions enforced here + app |
 | prompt | text NOT NULL | |
@@ -89,12 +90,15 @@ Constraints: `CHECK ((rating_value IS NULL) <> (bool_value IS NULL))` (exactly o
 - **Policies:** for each tenant table (`users`, `surveys`, `questions`, `responses`, `answers`): `ENABLE ROW LEVEL SECURITY` plus one policy:
 
 ```sql
-CREATE POLICY tenant_isolation ON surveys
-  USING (organization_id = current_setting('app.current_organization_id', true)::uuid)
-  WITH CHECK (organization_id = current_setting('app.current_organization_id', true)::uuid);
+CREATE POLICY tenant_select ON surveys
+  FOR SELECT TO pulse_app
+  USING (organization_id = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
+CREATE POLICY tenant_insert ON surveys
+  FOR INSERT TO pulse_app
+  WITH CHECK (organization_id = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
 ```
 
-- **Fail closed:** `current_setting(..., true)` returns NULL when the setting is absent → predicate is NULL → zero rows readable and all writes rejected. No context = no access.
+- **Fail closed:** `current_setting(..., true)` returns NULL when the setting is absent, and `''` on pooled connections that already served one `SET LOCAL` transaction after commit; `NULLIF(..., '')` maps both to NULL → predicate is NULL → zero rows readable and all writes rejected. No context = no access.
 - **Request flow:** NestJS guard resolves the user from `X-User-Id`; a transaction interceptor opens one transaction per request and executes `SET LOCAL app.current_organization_id = '<org-uuid>'` before queries. `SET LOCAL` is transaction-scoped, so pooled connections can never leak tenant context.
 - **Defense in depth:** repositories additionally filter by the resolved `organization_id`; the summary completion rate and org member count are computed inside the same RLS-scoped transaction.
 
@@ -119,7 +123,7 @@ CREATE POLICY tenant_isolation ON surveys
 | `GET /users` | any | Demo login list: `{id, name, role, organization}` for the dropdown |
 | `GET /surveys/active` | member, manager | Caller's org active survey with ordered questions |
 | `POST /surveys/:surveyId/responses` | member | Submit `{answers: [{questionId, ratingValue? , boolValue?}]}`. Validates: survey belongs to caller's org & is active, questions belong to the survey, value type matches question type, rating ∈ 1–5. Second response in the same week → `409`. |
-| `GET /surveys/:surveyId/summary` | manager | Weekly summary: `{weekStart, completionCount, completionRate, perQuestion}`. Rating questions → `{average, count}`; yes/no → `{yesCount, noCount, count}`. `completionRate` = responses this week ÷ member count of the org. `?week=` optional. |
+| `GET /surveys/:surveyId/summary` | manager | Weekly summary: `{weekStart, completionCount, completionRate, perQuestion}`. Rating questions → `{average, count}`; yes/no → `{yesCount, noCount, count}`. `completionCount` = responses submitted for **this survey** in the week (N-8), while the `completionRate` denominator is the **org member count** — the two scopes differ by design. `?week=` optional. |
 | `POST /seed` | public (dev) | Idempotent fixture seeding: 2 organizations, ≥2 users per role each, one active 3-question survey per org. Returns the seeded entities for the demo. |
 
 Errors: `{statusCode, message}` JSON; `401` unauthenticated, `403` wrong role/org, `404` not found or cross-org (RLS yields empty), `409` duplicate weekly response.

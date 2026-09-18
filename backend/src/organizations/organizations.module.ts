@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Organization } from '../entities/organization.entity';
 import { OrganizationsService } from './organizations.service';
 
+// No forFeature (review N-6): OrganizationsService.memberCount is raw SQL on
+// the transactional EntityManager inside the tenant tx; the Organization
+// entity metadata is registered by SeedModule.
 @Module({
-  imports: [TypeOrmModule.forFeature([Organization])],
   providers: [OrganizationsService],
   exports: [OrganizationsService],
 })

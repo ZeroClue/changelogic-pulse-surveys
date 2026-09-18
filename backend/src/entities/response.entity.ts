@@ -2,10 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { JoinColumn } from 'typeorm';
 import { Organization } from './organization.entity';
 import { Survey } from './survey.entity';
 import { User } from './user.entity';

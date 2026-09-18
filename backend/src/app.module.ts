@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from './common/db/snake-naming.strategy';
 import { RolesGuard } from './common/guards/roles.guard';
 import { UserGuard } from './common/guards/user.guard';
+import { TenancyModule } from './common/tenancy/tenancy.module';
 import { AnswersModule } from './answers/answers.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { QuestionsModule } from './questions/questions.module';
@@ -29,6 +30,7 @@ import { UsersModule } from './users/users.module';
         autoLoadEntities: true,
       }),
     }),
+    TenancyModule,
     UsersModule,
     OrganizationsModule,
     SurveysModule,

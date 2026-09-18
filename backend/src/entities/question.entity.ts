@@ -1,6 +1,11 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { JoinColumn } from 'typeorm';
-import { type QuestionType } from './enums';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { QUESTION_TYPES, type QuestionType } from './enums';
 import { Organization } from './organization.entity';
 import { Survey } from './survey.entity';
 
@@ -31,7 +36,7 @@ export class Question {
 
   @Column({
     type: 'enum',
-    enum: ['rating', 'yes_no'],
+    enum: [...QUESTION_TYPES],
     enumName: 'question_type',
   })
   type!: QuestionType;
