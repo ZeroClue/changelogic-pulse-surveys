@@ -1,0 +1,50 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731:free",
+  "small_model": "openrouter/deepseek/deepseek-v4-flash-0731:free",
+  "agent": {
+    "reviewer": {
+      "description": "Reviews code for correctness, security, and multi-tenant isolation issues before commits",
+      "mode": "subagent",
+      "model": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "permission": {
+        "edit": "deny"
+      }
+    },
+    "orchestrator": {
+      "model": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+    }
+  },
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "edit": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "glob": {
+      "*": "allow"
+    },
+    "grep": {
+      "*": "allow"
+    },
+    "bash": {
+      "*": "allow"
+    },
+    "external_directory": "deny",
+    "skill": {
+      "*": "deny",
+      "code-review": "allow",
+      "humanizer": "allow"
+    }
+  }
+}
